@@ -30,7 +30,7 @@ namespace PlaceLight
     static FamilyInstance PlaceALight( 
       XYZ lightPlacePoint, 
       Element host,
-      string sketchPlaneName,
+      //string sketchPlaneName,
       FamilySymbol lightSymbol )
     {
       Document doc = lightSymbol.Document;
@@ -64,9 +64,9 @@ namespace PlaceLight
       // the parameter is read-only,
       // so an exception is thrown.
  
-      inst.get_Parameter( 
-        BuiltInParameter.SKETCH_PLANE_PARAM )
-          .Set( sketchPlaneName );
+      //inst.get_Parameter( 
+      //  BuiltInParameter.SKETCH_PLANE_PARAM )
+      //    .Set( sketchPlaneName );
 
       return inst;
     }
@@ -110,13 +110,21 @@ namespace PlaceLight
         FamilySymbol lightFamilySymbol 
           = lightFamilyInstance.Symbol;
 
-        Parameter sketchPlaneParam = lightFamilyInstance.get_Parameter( BuiltInParameter.SKETCH_PLANE_PARAM );
-        string sketchPlaneName = sketchPlaneParam.AsString();
+        //Parameter sketchPlaneParam = lightFamilyInstance.get_Parameter( BuiltInParameter.SKETCH_PLANE_PARAM );
+        //string sketchPlaneName = sketchPlaneParam.AsString();
 
         // Get new light location
 
         XYZ placeXyzPoint = selection.PickPoint( 
           "Select Point to place light:" );
+
+        // Assuming the ceiling is horizontal, we want 
+        // the same Z value for the copy as for the 
+        // original.
+
+        placeXyzPoint = new XYZ( placeXyzPoint.X, 
+          placeXyzPoint.Y, ( lightFamilyInstance
+            .Location as LocationPoint ).Point.Z );
 
         using( var trans = new Transaction( doc ) )
         {
@@ -126,7 +134,7 @@ namespace PlaceLight
 
           FamilyInstance lightFamilyInstance2 
             = PlaceALight( placeXyzPoint, 
-            lightFamilyInstance.Host, sketchPlaneName, 
+            lightFamilyInstance.Host, 
             lightFamilySymbol );
 
           trans.Commit();
