@@ -27,11 +27,14 @@ namespace PlaceLight
   [Transaction( TransactionMode.Manual )]
   public class Command : IExternalCommand
   {
-    static void PlaceALight( 
-      Document doc, 
+    static FamilyInstance PlaceALight( 
       XYZ lightPlacePoint, 
+      Element host,
       FamilySymbol lightSymbol )
     {
+      Document doc = lightSymbol.Document;
+
+#if CREATE_INSTANCE_ON_NEW_REFERENCE_PLANE
       // I tried every combination of numbers here and nothing worked.
 
       XYZ bubbleEnd = new XYZ( 5, 0, 0 );
@@ -49,6 +52,12 @@ namespace PlaceLight
       doc.Create.NewFamilyInstance( 
         referencePlane.Reference, lightPlacePoint, 
         xAxisOfPlane, lightSymbol );
+#endif // CREATE_INSTANCE_ON_NEW_REFERENCE_PLANE
+
+      return doc.Create.NewFamilyInstance( 
+        lightPlacePoint, lightSymbol, host, 
+        Autodesk.Revit.DB.Structure.StructuralType
+          .NonStructural );
     }
 
     public Result Execute( 
@@ -101,7 +110,7 @@ namespace PlaceLight
 
           // Start placing lights
 
-          PlaceALight( doc, placeXyzPoint, lightFamilySymbol );
+          PlaceALight( placeXyzPoint, lightFamilyInstance.Host, lightFamilySymbol );
 
           trans.Commit();
         }
