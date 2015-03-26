@@ -30,6 +30,7 @@ namespace PlaceLight
     static FamilyInstance PlaceALight( 
       XYZ lightPlacePoint, 
       Element host,
+      string sketchPlaneName,
       FamilySymbol lightSymbol )
     {
       Document doc = lightSymbol.Document;
@@ -54,10 +55,20 @@ namespace PlaceLight
         xAxisOfPlane, lightSymbol );
 #endif // CREATE_INSTANCE_ON_NEW_REFERENCE_PLANE
 
-      return doc.Create.NewFamilyInstance( 
+      FamilyInstance inst = doc.Create.NewFamilyInstance( 
         lightPlacePoint, lightSymbol, host, 
         Autodesk.Revit.DB.Structure.StructuralType
           .NonStructural );
+
+      // This does not work, because 
+      // the parameter is read-only,
+      // so an exception is thrown.
+ 
+      inst.get_Parameter( 
+        BuiltInParameter.SKETCH_PLANE_PARAM )
+          .Set( sketchPlaneName );
+
+      return inst;
     }
 
     public Result Execute( 
@@ -99,6 +110,9 @@ namespace PlaceLight
         FamilySymbol lightFamilySymbol 
           = lightFamilyInstance.Symbol;
 
+        Parameter sketchPlaneParam = lightFamilyInstance.get_Parameter( BuiltInParameter.SKETCH_PLANE_PARAM );
+        string sketchPlaneName = sketchPlaneParam.AsString();
+
         // Get new light location
 
         XYZ placeXyzPoint = selection.PickPoint( 
@@ -110,7 +124,10 @@ namespace PlaceLight
 
           // Start placing lights
 
-          PlaceALight( placeXyzPoint, lightFamilyInstance.Host, lightFamilySymbol );
+          FamilyInstance lightFamilyInstance2 
+            = PlaceALight( placeXyzPoint, 
+            lightFamilyInstance.Host, sketchPlaneName, 
+            lightFamilySymbol );
 
           trans.Commit();
         }
