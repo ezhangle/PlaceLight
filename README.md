@@ -2,7 +2,7 @@
 
 Revit add-in demonstrating how to copy a lighting fixture.
 
-For a detailed desciption, please refer to
+For a detailed description, please refer to
 [The Building Coder](http://thebuildingcoder.typepad.com).
 
 
