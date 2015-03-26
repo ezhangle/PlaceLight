@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Command">
+    <Text>Command PlaceLight</Text>
+    <Description>Some description for PlaceLight</Description>
+    <Assembly>PlaceLight.dll</Assembly>
+    <FullClassName>PlaceLight.Command</FullClassName>
+    <ClientId>145ad0b9-76d1-4506-ae85-aaa396c33d26</ClientId>
+    <VendorId>TBC_</VendorId>
+    <VendorDescription>The Building Coder, http://thebuildingcoder.typepad.com</VendorDescription>
+  </AddIn>
+</RevitAddIns>
