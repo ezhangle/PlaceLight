@@ -30,39 +30,31 @@ namespace PlaceLight
     static FamilyInstance PlaceALight( 
       XYZ lightPlacePoint, 
       Element host,
-      //string sketchPlaneName,
       FamilySymbol lightSymbol )
     {
       Document doc = lightSymbol.Document;
 
-#if CREATE_INSTANCE_ON_NEW_REFERENCE_PLANE
-      // I tried every combination of numbers here and nothing worked.
+      // This does not work, because we need to
+      // specify a valid BIM element host.
 
-      XYZ bubbleEnd = new XYZ( 5, 0, 0 );
-      XYZ freeEnd = new XYZ( -5, 0, 0 );
-      XYZ thirdPt = new XYZ( 0, 0, 1 );
-
-      ReferencePlane referencePlane 
-        = doc.Create.NewReferencePlane2( bubbleEnd, 
-          freeEnd, thirdPt, doc.ActiveView );
-      
-      XYZ xAxisOfPlane = new XYZ( 0, 0, -1 );
-
-      // Error here:
-
-      doc.Create.NewFamilyInstance( 
-        referencePlane.Reference, lightPlacePoint, 
-        xAxisOfPlane, lightSymbol );
-#endif // CREATE_INSTANCE_ON_NEW_REFERENCE_PLANE
+      //XYZ bubbleEnd = new XYZ( 5, 0, 0 );
+      //XYZ freeEnd = new XYZ( -5, 0, 0 );
+      //XYZ thirdPt = new XYZ( 0, 0, 1 );
+      //ReferencePlane referencePlane 
+      //  = doc.Create.NewReferencePlane2( bubbleEnd, 
+      //    freeEnd, thirdPt, doc.ActiveView );
+      //XYZ xAxisOfPlane = new XYZ( 0, 0, -1 );
+      //doc.Create.NewFamilyInstance( 
+      //  referencePlane.Reference, lightPlacePoint, 
+      //  xAxisOfPlane, lightSymbol );
 
       FamilyInstance inst = doc.Create.NewFamilyInstance( 
         lightPlacePoint, lightSymbol, host, 
         Autodesk.Revit.DB.Structure.StructuralType
           .NonStructural );
 
-      // This does not work, because 
-      // the parameter is read-only,
-      // so an exception is thrown.
+      // This does not work, because the parameter
+      // is read-only, so an exception is thrown.
  
       //inst.get_Parameter( 
       //  BuiltInParameter.SKETCH_PLANE_PARAM )
@@ -83,7 +75,7 @@ namespace PlaceLight
       {
         Selection selection = uiApp.ActiveUIDocument.Selection;
 
-        // Pick a light fixture
+        // Pick a light fixture.
 
         var pickedLightReference = selection.PickObject( 
           ObjectType.Element, new LightPickFilter(), 
@@ -94,13 +86,13 @@ namespace PlaceLight
           return Result.Failed;
         }
 
-        // Get Family Instance of the selected light reference
+        // Get Family Instance of the selected light reference.
 
         FamilyInstance lightFamilyInstance 
           = doc.GetElement( pickedLightReference ) 
             as FamilyInstance;
 
-        // Get FamilySymbol of the family instance
+        // Get FamilySymbol of the family instance.
 
         if( lightFamilyInstance == null )
         {
@@ -113,14 +105,14 @@ namespace PlaceLight
         //Parameter sketchPlaneParam = lightFamilyInstance.get_Parameter( BuiltInParameter.SKETCH_PLANE_PARAM );
         //string sketchPlaneName = sketchPlaneParam.AsString();
 
-        // Get new light location
+        // Get new light location.
 
         XYZ placeXyzPoint = selection.PickPoint( 
           "Select Point to place light:" );
 
-        // Assuming the ceiling is horizontal, we want 
-        // the same Z value for the copy as for the 
-        // original.
+        // Assuming the ceiling is horizontal, we set
+        // the location point Z value for the copy
+        // equal to the original.
 
         placeXyzPoint = new XYZ( placeXyzPoint.X, 
           placeXyzPoint.Y, ( lightFamilyInstance
@@ -130,12 +122,12 @@ namespace PlaceLight
         {
           trans.Start( "LightArray" );
 
-          // Start placing lights
+          // Start placing lights.
 
           FamilyInstance lightFamilyInstance2 
             = PlaceALight( placeXyzPoint, 
-            lightFamilyInstance.Host, 
-            lightFamilySymbol );
+              lightFamilyInstance.Host, 
+              lightFamilySymbol );
 
           trans.Commit();
         }
