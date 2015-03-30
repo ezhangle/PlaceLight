@@ -70,31 +70,37 @@ namespace PlaceLight
         FamilySymbol lightFamilySymbol
           = lightFamilyInstance.Symbol;
 
+        // Determine this family's placement type.
+        // This is an important step towards determining
+        // which NewFamilyInstance overload to use to
+        // place new instances of it.
+
         FamilyPlacementType placementType 
           = lightFamilySymbol.Family
             .FamilyPlacementType;
 
         // Determine the host BIM element.
 
-        Element host = lightFamilyInstance.Host;
+        //Element host = lightFamilyInstance.Host;
 
         // What else can we find out?
 
         LocationPoint lp = lightFamilyInstance.Location
           as LocationPoint;
 
-        IList<FamilyPointPlacementReference> refs 
-          = lightFamilyInstance
-            .GetFamilyPointPlacementReferences();
+        //IList<FamilyPointPlacementReference> refs 
+        //  = lightFamilyInstance
+        //    .GetFamilyPointPlacementReferences();
 
         Reference hostFace = lightFamilyInstance.HostFace;
-        ElementId levelId = lightFamilyInstance.LevelId;
 
-        GeometryObject faceObj 
-          = host.GetGeometryObjectFromReference( 
-            hostFace );
+        //ElementId levelId = lightFamilyInstance.LevelId;
 
-        Face face = faceObj as Face;
+        //GeometryObject faceObj 
+        //  = host.GetGeometryObjectFromReference( 
+        //    hostFace );
+
+        //Face face = faceObj as Face;
 
         // Get new light location.
 
@@ -110,19 +116,19 @@ namespace PlaceLight
 
         // All lighting fixtures are non-strucutral.
 
-        Autodesk.Revit.DB.Structure.StructuralType
-          non_structural = Autodesk.Revit.DB.Structure
-            .StructuralType.NonStructural;
+        //Autodesk.Revit.DB.Structure.StructuralType
+        //  non_structural = Autodesk.Revit.DB.Structure
+        //    .StructuralType.NonStructural;
 
         using( var trans = new Transaction( doc ) )
         {
           trans.Start( "LightArray" );
 
-          if( faceObj is PlanarFace )
-          {
-            PlanarFace pf = faceObj as PlanarFace;
-            Plane plane = new Plane( pf.Normal, pf.Origin );
-          }
+          //if( faceObj is PlanarFace )
+          //{
+          //  PlanarFace pf = faceObj as PlanarFace;
+          //  Plane plane = new Plane( pf.Normal, pf.Origin );
+          //}
 
           //SketchPlane sp = SketchPlane.Create( doc, hostFace );
           //uidoc.ActiveView.SketchPlane = sp;
@@ -151,15 +157,16 @@ namespace PlaceLight
 
           // This throws:
           // The Reference of the input face is null.  
-          // If the face was obtained from Element.Geometry, make sure to turn on the option 'ComputeReferences'.
+          // If the face was obtained from Element.Geometry, 
+          // make sure to turn on the option 'ComputeReferences'.
           // Parameter name: face
           //
-          //FamilyInstance lightFamilyInstance3
+          //FamilyInstance lightFamilyInstance2
           //  = doc.Create.NewFamilyInstance(
           //    face, placeXyzPoint, XYZ.BasisX,
           //    lightFamilySymbol );
 
-          FamilyInstance lightFamilyInstance3
+          FamilyInstance lightFamilyInstance2
             = doc.Create.NewFamilyInstance( 
               hostFace, placeXyzPoint, XYZ.BasisX, 
               lightFamilySymbol );
