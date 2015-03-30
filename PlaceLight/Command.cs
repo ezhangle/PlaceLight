@@ -1,5 +1,6 @@
 #region Namespaces
 using System;
+using System.Collections.Generic;
 using Autodesk.Revit.ApplicationServices;
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
@@ -10,6 +11,7 @@ using OperationCanceledException = Autodesk.Revit.Exceptions.OperationCanceledEx
 
 namespace PlaceLight
 {
+  #region LightPickFilter
   public class LightPickFilter : ISelectionFilter
   {
     public bool AllowElement( Element e )
@@ -23,6 +25,7 @@ namespace PlaceLight
       return false;
     }
   }
+  #endregion // LightPickFilter
 
   [Transaction( TransactionMode.Manual )]
   public class Command : IExternalCommand
@@ -32,13 +35,13 @@ namespace PlaceLight
       ref string message,
       ElementSet elements )
     {
-      var uiApp = commandData.Application;
-      var doc = uiApp.ActiveUIDocument.Document;
+      UIApplication uiapp = commandData.Application;
+      UIDocument uidoc = uiapp.ActiveUIDocument;
+      Document doc = uidoc.Document;
 
       try
       {
-        Selection selection = uiApp.ActiveUIDocument
-          .Selection;
+        Selection selection = uidoc.Selection;
 
         // Pick a light fixture.
 
@@ -67,22 +70,43 @@ namespace PlaceLight
         FamilySymbol lightFamilySymbol
           = lightFamilyInstance.Symbol;
 
+        FamilyPlacementType placementType 
+          = lightFamilySymbol.Family
+            .FamilyPlacementType;
+
         // Determine the host BIM element.
 
         Element host = lightFamilyInstance.Host;
 
+        // What else can we find out?
+
+        LocationPoint lp = lightFamilyInstance.Location
+          as LocationPoint;
+
+        IList<FamilyPointPlacementReference> refs 
+          = lightFamilyInstance
+            .GetFamilyPointPlacementReferences();
+
+        Reference hostFace = lightFamilyInstance.HostFace;
+        ElementId levelId = lightFamilyInstance.LevelId;
+
+        GeometryObject faceObj 
+          = host.GetGeometryObjectFromReference( 
+            hostFace );
+
+        Face face = faceObj as Face;
+
         // Get new light location.
 
         XYZ placeXyzPoint = selection.PickPoint(
-          "Select Point to place light:" );
+          "Select point to place new light:" );
 
         // Assuming the ceiling is horizontal, set
         // the location point Z value for the copy
         // equal to the original.
 
         placeXyzPoint = new XYZ( placeXyzPoint.X,
-          placeXyzPoint.Y, ( lightFamilyInstance
-            .Location as LocationPoint ).Point.Z );
+          placeXyzPoint.Y, lp.Point.Z );
 
         // All lighting fixtures are non-strucutral.
 
@@ -94,12 +118,51 @@ namespace PlaceLight
         {
           trans.Start( "LightArray" );
 
+          if( faceObj is PlanarFace )
+          {
+            PlanarFace pf = faceObj as PlanarFace;
+            Plane plane = new Plane( pf.Normal, pf.Origin );
+          }
+
+          //SketchPlane sp = SketchPlane.Create( doc, hostFace );
+          //uidoc.ActiveView.SketchPlane = sp;
+
+          //doc.Regenerate();
+
           // Start placing lights.
 
-          FamilyInstance lightFamilyInstance2
-            = doc.Create.NewFamilyInstance(
-              placeXyzPoint, lightFamilySymbol,
-              host, non_structural );
+          // This is not suitabel for work plane based symbols:
+          //
+          //FamilyInstance lightFamilyInstance2
+          //  = doc.Create.NewFamilyInstance(
+          //    placeXyzPoint, lightFamilySymbol,
+          //    host, non_structural );
+
+          // This throws: 
+          // Family cannot be placed as line-based on an input face reference, 
+          // because its FamilyPlacementType is not WorkPlaneBased or CurveBased
+          // Parameter name: symbol
+          //
+          //Line line = Line.CreateBound( placeXyzPoint, 
+          //  placeXyzPoint + XYZ.BasisX );
+          //FamilyInstance lightFamilyInstance2
+          //  = doc.Create.NewFamilyInstance(
+          //    hostFace, line, lightFamilySymbol );
+
+          // This throws:
+          // The Reference of the input face is null.  
+          // If the face was obtained from Element.Geometry, make sure to turn on the option 'ComputeReferences'.
+          // Parameter name: face
+          //
+          //FamilyInstance lightFamilyInstance3
+          //  = doc.Create.NewFamilyInstance(
+          //    face, placeXyzPoint, XYZ.BasisX,
+          //    lightFamilySymbol );
+
+          FamilyInstance lightFamilyInstance3
+            = doc.Create.NewFamilyInstance( 
+              hostFace, placeXyzPoint, XYZ.BasisX, 
+              lightFamilySymbol );
 
           trans.Commit();
         }
