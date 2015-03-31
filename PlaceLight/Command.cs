@@ -74,7 +74,7 @@ namespace PlaceLight
         // which NewFamilyInstance overload to use to
         // place new instances of it.
 
-        FamilyPlacementType placementType 
+        FamilyPlacementType placementType
           = lightFamilySymbol.Family
             .FamilyPlacementType;
 
@@ -105,8 +105,8 @@ namespace PlaceLight
           trans.Start( "LightArray" );
 
           FamilyInstance lightFamilyInstance2
-            = doc.Create.NewFamilyInstance( 
-              hostFace, placeXyzPoint, XYZ.BasisX, 
+            = doc.Create.NewFamilyInstance(
+              hostFace, placeXyzPoint, XYZ.BasisX,
               lightFamilySymbol );
 
           trans.Commit();
