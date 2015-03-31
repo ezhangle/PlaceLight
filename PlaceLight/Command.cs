@@ -1,6 +1,5 @@
 #region Namespaces
 using System;
-using System.Collections.Generic;
 using Autodesk.Revit.ApplicationServices;
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
@@ -79,33 +78,20 @@ namespace PlaceLight
           = lightFamilySymbol.Family
             .FamilyPlacementType;
 
-        // Determine the host BIM element.
-
-        //Element host = lightFamilyInstance.Host;
-
-        // What else can we find out?
-
-        LocationPoint lp = lightFamilyInstance.Location
-          as LocationPoint;
-
-        //IList<FamilyPointPlacementReference> refs 
-        //  = lightFamilyInstance
-        //    .GetFamilyPointPlacementReferences();
+        // Placement type is WorkPlaneBased, so determine
+        // the host face that defines the work plane.
 
         Reference hostFace = lightFamilyInstance.HostFace;
 
-        //ElementId levelId = lightFamilyInstance.LevelId;
-
-        //GeometryObject faceObj 
-        //  = host.GetGeometryObjectFromReference( 
-        //    hostFace );
-
-        //Face face = faceObj as Face;
-
-        // Get new light location.
+        // Prompt for placement point of copy.
 
         XYZ placeXyzPoint = selection.PickPoint(
           "Select point to place new light:" );
+
+        // The location point gives Z elevation value.
+
+        LocationPoint lp = lightFamilyInstance.Location
+          as LocationPoint;
 
         // Assuming the ceiling is horizontal, set
         // the location point Z value for the copy
@@ -114,57 +100,9 @@ namespace PlaceLight
         placeXyzPoint = new XYZ( placeXyzPoint.X,
           placeXyzPoint.Y, lp.Point.Z );
 
-        // All lighting fixtures are non-strucutral.
-
-        //Autodesk.Revit.DB.Structure.StructuralType
-        //  non_structural = Autodesk.Revit.DB.Structure
-        //    .StructuralType.NonStructural;
-
         using( var trans = new Transaction( doc ) )
         {
           trans.Start( "LightArray" );
-
-          //if( faceObj is PlanarFace )
-          //{
-          //  PlanarFace pf = faceObj as PlanarFace;
-          //  Plane plane = new Plane( pf.Normal, pf.Origin );
-          //}
-
-          //SketchPlane sp = SketchPlane.Create( doc, hostFace );
-          //uidoc.ActiveView.SketchPlane = sp;
-
-          //doc.Regenerate();
-
-          // Start placing lights.
-
-          // This is not suitabel for work plane based symbols:
-          //
-          //FamilyInstance lightFamilyInstance2
-          //  = doc.Create.NewFamilyInstance(
-          //    placeXyzPoint, lightFamilySymbol,
-          //    host, non_structural );
-
-          // This throws: 
-          // Family cannot be placed as line-based on an input face reference, 
-          // because its FamilyPlacementType is not WorkPlaneBased or CurveBased
-          // Parameter name: symbol
-          //
-          //Line line = Line.CreateBound( placeXyzPoint, 
-          //  placeXyzPoint + XYZ.BasisX );
-          //FamilyInstance lightFamilyInstance2
-          //  = doc.Create.NewFamilyInstance(
-          //    hostFace, line, lightFamilySymbol );
-
-          // This throws:
-          // The Reference of the input face is null.  
-          // If the face was obtained from Element.Geometry, 
-          // make sure to turn on the option 'ComputeReferences'.
-          // Parameter name: face
-          //
-          //FamilyInstance lightFamilyInstance2
-          //  = doc.Create.NewFamilyInstance(
-          //    face, placeXyzPoint, XYZ.BasisX,
-          //    lightFamilySymbol );
 
           FamilyInstance lightFamilyInstance2
             = doc.Create.NewFamilyInstance( 
